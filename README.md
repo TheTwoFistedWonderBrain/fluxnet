@@ -7,6 +7,13 @@ Description, topology, and high-level configuration of my local fluxnet environm
 
 ![](assets/images/lab_topology.png)
 
+## Core Components:
+
+* [XCP-ng](https://xcp-ng.org/) + [Xen Orchestra](https://xen-orchestra.com/#!/xo-home)
+* [OPNsense](https://opnsense.org/)
+* [Unifi](https://ui.com/)
+* [QNAP](https://www.qnap.com) NAS
+
 ## Hosts:
 
 |   |   |
