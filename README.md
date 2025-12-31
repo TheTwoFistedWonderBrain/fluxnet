@@ -46,17 +46,29 @@ Description, topology, and high-level configuration of my local fluxnet environm
 | vlan100_management | 10.1.100.223 | 1GbE |
 | vlan250_storage | 10.1.250.223 | 10GbE |
 
-## VLANs:
+## Subnets:
 
-|  VLAN | Logical Name | Description |
-| --- | --- | --- |
-| 25 | vlan25_fluxnet | Primary Data |
-| 50 | vlan50_idiot | IoT Devices | 
-| 100 | vlan100_management | Management |
-| 120 | vlan120_voice | VoIP (Future) |
-| 150 | vlan150_secnet | Secure Devices |
-| 200 | vlan200_kubernetes | Kubernetes (Future) |
-| 250 | vlan250_storage | Storage/SAN - 10GbE links |
+My approach to subnetting here will absolutely not be applicable to many, if not even most, environments. This started when I took over production infrastructure that included several locations, each using their own flat /24 subnet. These looked like 192.168.A.B, where A was the site, and B for the hosts/devices. Unsurprisingly, the two subnets with the most devices would quite often run out of available IP addresses. What do the hosts at each location look like? Are they user PCs/laptops, cell phones, voip phones, servers, network equipment, etc.? With subnet math, there are often many ways to address this. Since I was the only one managing the infrastructure, including just about every aspect of it, I chose to walk what I think is the simplest, most efficient, and most logical path. 
+
+The first thing was to plan the VLANs/subnets. Despite having 65535 available, I wanted to stay between 1-254 (which should be apparent below), and I chose to use 100-200 initially because they are easier to distinguish visually when displayed in a list. Initially, I had planned ten VLANs (100, 110, 120, etc.) for things like primary data, VoIP, management, servers, and a few others. In practice, I think I only ended up using a handful of them. A key thing here is VLAN consistency at each location. Each VLAN/subnet was also its own /24. Even with just the handful that were used consistently, that segmented the network enough that there may not ever be another shortage of IP addresses.
+
+It really is as simple as this: 10.A.B.C
+
+* A = Site number
+* B = VLAN
+* C = Host
+
+With my home network, the site number was no longer important. I still stayed with a very similar schema, because.... futureproofing? I did not need the same number of VLANs, but the core ideas are there.
+
+|  VLAN | Logical Name | Description | CIDR |
+| --- | --- | --- | --- |
+| 25 | vlan25_fluxnet | Primary Data | 10.1.25.0/24 |
+| 50 | vlan50_idiot | IoT Devices | 10.1.50.0/24 |
+| 100 | vlan100_management | Management | 10.1.100.0/24 |
+| 120 | vlan120_voice | VoIP (Future) | 10.1.120.0/24 |
+| 150 | vlan150_secnet | Secure Devices | 10.1.150.0/24 |
+| 200 | vlan200_kubernetes | Kubernetes (Future) | 10.1.200.0/24 |
+| 250 | vlan250_storage | Storage/SAN - 10GbE links | 10.1.250.0/24 |
 
 ## Storage Repositories:
 
@@ -65,7 +77,7 @@ Description, topology, and high-level configuration of my local fluxnet environm
 | ISO | ISO | NFS | HDD (RAID 6) | 10.1.250.250 |
 | vmstore_001 | VM | iSCSI | HDD (RAID 6) | 10.1.250.250 |
 | vmstore_nfs_001 | VM | NFS | HDD (RAID 6) | 10.1.250.250 |
-| vmstore_ssdO_nfs_001 | VM | NFS | SSD (6Gb/s SATA, RAID 0) | 10.1.250.250 |
+| vmstore_ssd_nfs_001 | VM | NFS | SSD (6Gb/s SATA, RAID 0) | 10.1.250.250 |
 
 ## Backup Repositories:
 
@@ -79,3 +91,14 @@ Description, topology, and high-level configuration of my local fluxnet environm
 | --- | --- | --- |
 | vlan100_management | 10.1.100.220 | 1GbE |
 | vlan250_storage | 10.1.250.220 | 10GbE |
+
+## Backups:
+
+### Virtual Machines:
+
+> Xen Orchestra provides the ability to do full and incremental (delta) backups (to a backup remote), rolling snapshots (to same SR, next to VM disk), replication to another SR (or same), as well as backups of XO config and XCP-ng pool metadata.
+
+> My bare minimum recommendation would be a nightly backup of XO config and XCP-ng pool metadata, nightly incremental backups with retention of 7+ and full backup forced every 7 days, and weekly full backups with retention of 4+. Off-site backup replication is also recommended.
+
+* **XO config and XCP-ng pool metadata** - This is backed up nightly.
+* ** Incremental (Delta)** - 
