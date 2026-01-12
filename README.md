@@ -3,9 +3,16 @@ Description, topology, and high-level configuration of my local fluxnet environm
 
 > This page (and this repo) is very much a very early Work-in-Progress.
 
-![](assets/images/fluxnet_cabinet.jpg)
+## My Methodology:
 
-![](assets/images/lab_topology.png)
+> Coming soon.
+
+
+## Topology:
+
+![](assets/images/topology-2026-01-12.png)
+
+![](assets/images/fluxnet_cabinet-600px.jpg)
 
 ## Core Components:
 
