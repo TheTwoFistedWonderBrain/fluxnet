@@ -12,7 +12,7 @@ Description, topology, and high-level configuration of my local fluxnet environm
 
 ![](assets/images/topology-2026-01-12.png)
 
-![](assets/images/fluxnet_cabinet-600px.jpg)
+![](assets/images/colo_and_fluxnet_cabinets.png)
 
 ## Core Components:
 
