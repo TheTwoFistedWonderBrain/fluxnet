@@ -16,7 +16,8 @@ Description, topology, and high-level configuration of my local fluxnet environm
 
 ## Core Components:
 
-* [XCP-ng](https://xcp-ng.org/) + [Xen Orchestra](https://xen-orchestra.com/#!/xo-home)
+* [XCP-ng](https://xcp-ng.org/) (8.3 LTS)
++ [Xen Orchestra](https://xen-orchestra.com/#!/xo-home) (v5 is preferred for now, but v6 is gorgeous)
 * [OPNsense](https://opnsense.org/)
 * [Unifi](https://ui.com/)
 * [QNAP](https://www.qnap.com) NAS
