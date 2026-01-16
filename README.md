@@ -7,10 +7,7 @@ Description, topology, and high-level configuration of my local fluxnet environm
 
 > Coming soon.
 
-
-## Topology:
-
-![](assets/images/topology-2026-01-12.png)
+## The Proof is in the Pudding:
 
 ![](assets/images/colo_and_fluxnet_cabinets.png)
 
@@ -22,16 +19,75 @@ Description, topology, and high-level configuration of my local fluxnet environm
 * [Unifi](https://ui.com/)
 * [QNAP](https://www.qnap.com) NAS
 
-## Hosts:
+## Example Production Environment:
+
+### Hosts:
+
+|   |   |
+| --- | --- |
+| Host(s) | 3x Dell PowerEdge R450 |
+| CPU | Intel Xeon Silver 4316 / 20c40t |
+| RAM | 256GB |
+| Storage | Mirrored NVMe boot disk |
+| Network 1GbE | 4x 1GbE |
+| Network 10GbE | 2x 10GbE |
+
+### Storage:
+
+|   |   |
+| --- | --- |
+| Model | TrueNAS X10 |
+| Contr. | 2x redundant X10 controllers, 32GB RAM each, 12 vCPU each |
+| HDD | 9x TrueNAS SAS 7200RPM in RAID1+0 with hot spare (43.2TB usable) |
+| Read Accelerator | 400GB SAS SSD |
+| Write Accelerator | 16GB SAS SSD |
+| Network 1GbE | 2x 1GbE (per controller) |
+| Network 10GbE | 2x 10GbE (per controller) |
+
+### Network:
+
+|   |   |
+| --- | --- |
+| Access/Core | Unifi USW-Pro-24 |
+| Storage | Unifi USW-Pro-Aggregation |
+| Link Media | Copper preferred. CAT6 for 1GbE, DAC for 10GbE, fiber for carrier links |
+
+## Lab Environment:
+
+### Hosts:
 
 |   |   |
 | --- | --- |
 | Host(s) | 3x Lenovo M720q |
-| CPU | Intel Core i7-8700t |
+| CPU | Intel Core i7-8700t / 6c12t |
 | RAM | 32GB |
 | Storage | 120GB+ NVMe |
-| Network (onboard) | 1GbE |
-| Network (additional) | 2x 10GbE (10Gtek [Intel 82599ES Controller]) |
+| Network 1GbE | 1x 1GbE |
+| Network 10GbE | 2x 10GbE (10Gtek [Intel 82599ES Controller]) |
+
+### Storage:
+
+|   |   |
+| --- | --- |
+| Model | QNAP TS-873 |
+| CPU | AMD RX-421ND / 4c4t |
+| RAM | 16GB |
+| HDD | 8x 16TB in RAID6 (87.26TB usable) |
+| SSD | 2x 2TB in RAID0 (1.76TB usable) |
+| Network 1GbE | 4x 1GbE |
+| Network 10GbE | 2x 10GbE |
+
+### Network:
+
+|   |   |
+| --- | --- |
+| Access/Core | Unifi USW 24 PoE |
+| Storage | Unifi USW Aggregation |
+| Link Media | Copper preferred. CAT6 for 1GbE, DAC for 10GbE |
+
+## Topology:
+
+![](assets/images/topology-2026-01-12.png)
 
 ### fluxnet-xcp-host-001
 
@@ -109,4 +165,4 @@ With my home network, the site number was no longer important. I still stayed wi
 > My bare minimum recommendation would be a nightly backup of XO config and XCP-ng pool metadata, nightly incremental backups with retention of 7+ and full backup forced every 7 days, and weekly full backups with retention of 4+. Off-site backup replication is also recommended.
 
 * **XO config and XCP-ng pool metadata** - This is backed up nightly.
-* ** Incremental (Delta)** - 
+* ** Incremental (Delta)** - ( I got sidetracked when writing this out... will get back to it asap.)
