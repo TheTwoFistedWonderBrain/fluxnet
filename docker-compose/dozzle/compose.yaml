@@ -1,0 +1,25 @@
+services:
+  dozzle:
+    container_name: dozzle
+    image: amir20/dozzle:latest
+    # environment:
+    #   - DOZZLE_MODE=swarm
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dozzle.entrypoints=https-internal"
+      - "traefik.http.routers.dozzle.rule=Host(`dozzle.cookiecollective.net`)"
+      - "traefik.http.routers.dozzle.tls=true"
+      - "traefik.http.routers.dozzle.tls.certresolver=production"
+      - "traefik.http.services.dozzle.loadbalancer.server.port=8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    # ports:
+    #   - 8080:8080
+    networks:
+      - management
+    # deploy:
+    #   mode: global
+networks:
+  management:
+    external: true
