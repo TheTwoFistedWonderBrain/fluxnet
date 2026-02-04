@@ -62,7 +62,7 @@ services:
     networks:
       - unifi-backend
   unifi-network-application:
-    image: lscr.io/linuxserver/unifi-network-application:10.0.162
+    image: lscr.io/linuxserver/unifi-network-application:latest
     container_name: unifi-network-application
     environment:
       - PUID=1000
