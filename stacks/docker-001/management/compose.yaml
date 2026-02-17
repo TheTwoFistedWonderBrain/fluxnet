@@ -1,31 +1,31 @@
 services:
-  duplicati:
-    image: lscr.io/linuxserver/duplicati:latest
-    container_name: duplicati
-    environment:
-      - PUID=0
-      - PGID=0
-      - TZ=America/Chicago
-      - DUPLICATI_SETTINGS_ENCRYPTION_KEY=${DUPLICATI_SETTINGS_ENCRYPTION_KEY}
-    labels:
-      # - "com.centurylinklabs.watchtower.enable=true"
-      # - "com.centurylinklabs.watchtower.scope=monitor"
-      - "traefik.enable=true"
-      - "traefik.http.routers.duplicati.entrypoints=https-internal"
-      - "traefik.http.routers.duplicati.rule=Host(`duplicati.cookiecollective.net`)"
-      - "traefik.http.routers.duplicati.tls=true"
-      - "traefik.http.routers.duplicati.tls.certresolver=production"
-      - "traefik.http.services.duplicati.loadbalancer.server.port=8200"
-    volumes:
-      - ./duplicati/config:/config
-      - /mnt/docker/stacks:/source/stacks
-      - /mnt/docker/apps:/source/apps
-      - /mnt/docker_extras/backup:/destination
-    restart: unless-stopped
-    ports:
-      - 8200:8200
-    networks:
-      - management
+  # duplicati:
+  #   image: lscr.io/linuxserver/duplicati:latest
+  #   container_name: duplicati
+  #   environment:
+  #     - PUID=0
+  #     - PGID=0
+  #     - TZ=America/Chicago
+  #     - DUPLICATI_SETTINGS_ENCRYPTION_KEY=${DUPLICATI_SETTINGS_ENCRYPTION_KEY}
+  #   labels:
+  #     # - "com.centurylinklabs.watchtower.enable=true"
+  #     # - "com.centurylinklabs.watchtower.scope=monitor"
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.duplicati.entrypoints=https-internal"
+  #     - "traefik.http.routers.duplicati.rule=Host(`duplicati.cookiecollective.net`)"
+  #     - "traefik.http.routers.duplicati.tls=true"
+  #     - "traefik.http.routers.duplicati.tls.certresolver=production"
+  #     - "traefik.http.services.duplicati.loadbalancer.server.port=8200"
+  #   volumes:
+  #     - ./duplicati/config:/config
+  #     - /mnt/docker/stacks:/source/stacks
+  #     - /mnt/docker/apps:/source/apps
+  #     - /mnt/docker_extras/backup:/destination
+  #   restart: unless-stopped
+  #   ports:
+  #     - 8200:8200
+  #   networks:
+  #     - management
   portainer:
     image: portainer/portainer-ce:latest
     container_name: portainer
