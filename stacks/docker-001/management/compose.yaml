@@ -12,7 +12,7 @@ services:
   #     # - "com.centurylinklabs.watchtower.scope=monitor"
   #     - "traefik.enable=true"
   #     - "traefik.http.routers.duplicati.entrypoints=https-internal"
-  #     - "traefik.http.routers.duplicati.rule=Host(`duplicati.cookiecollective.net`)"
+  #     - "traefik.http.routers.duplicati.rule=Host(`duplicati.${DOMAIN_BASE_01}`)"
   #     - "traefik.http.routers.duplicati.tls=true"
   #     - "traefik.http.routers.duplicati.tls.certresolver=production"
   #     - "traefik.http.services.duplicati.loadbalancer.server.port=8200"
@@ -37,7 +37,7 @@ services:
       # - "com.centurylinklabs.watchtower.scope=monitor"
       - "traefik.enable=true"
       - "traefik.http.routers.portainer.entrypoints=https-internal"
-      - "traefik.http.routers.portainer.rule=Host(`portainer.cookiecollective.net`)"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.${DOMAIN_BASE_01}`)"
       - "traefik.http.routers.portainer.tls=true"
       - "traefik.http.routers.portainer.tls.certresolver=production"
       - "traefik.http.services.portainer.loadbalancer.server.port=9443"
@@ -54,13 +54,13 @@ services:
     container_name: unifi-os-server
     privileged: true
     environment:
-      - UOS_SYSTEM_IP=unifi.cookiecollective.net
+      - UOS_SYSTEM_IP=unifi.${DOMAIN_BASE_01}
     labels:
       # - "com.centurylinklabs.watchtower.enable=true"
       # - "com.centurylinklabs.watchtower.scope=monitor"
       - "traefik.enable=true"
       - "traefik.http.routers.unifi.entrypoints=https-internal,https-external"
-      - "traefik.http.routers.unifi.rule=Host(`unifi.cookiecollective.net`)"
+      - "traefik.http.routers.unifi.rule=Host(`unifi.${DOMAIN_BASE_01}`)"
       - "traefik.http.routers.unifi.tls=true"
       # - "traefik.http.routers.unifi.tls.passthrough=true"
       - "traefik.http.routers.unifi.tls.certresolver=production"
@@ -129,7 +129,7 @@ services:
   #     # - "com.centurylinklabs.watchtower.scope=monitor"
   #     - "traefik.enable=true"
   #     - "traefik.http.routers.unifi.entrypoints=https-internal,https-external"
-  #     - "traefik.http.routers.unifi.rule=Host(`unifi.cookiecollective.net`)"
+  #     - "traefik.http.routers.unifi.rule=Host(`unifi.${DOMAIN_BASE_01}`)"
   #     - "traefik.http.routers.unifi.tls=true"
   #     # - "traefik.http.routers.unifi.tls.passthrough=true"
   #     - "traefik.http.routers.unifi.tls.certresolver=production"
