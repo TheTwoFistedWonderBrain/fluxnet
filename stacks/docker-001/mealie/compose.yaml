@@ -29,7 +29,7 @@ services:
       BASE_URL: https://mealie.${DOMAIN_BASE_01}
       LOG_LEVEL: DEBUG
       # Database Settings
-      DB_ENGINE: postgres
+      DB_ENGINE: mealie_postgres
       POSTGRES_USER: mealie
       POSTGRES_PASSWORD: ${MEALIE_POSTGRES_PASSWORD}
       POSTGRES_SERVER: mealie_postgres
