@@ -28,10 +28,10 @@ services:
       BASE_URL: https://mealie.${DOMAIN_BASE_01}
       LOG_LEVEL: ERROR
       # Database Settings
-      DB_ENGINE: mealie_postgres
+      DB_ENGINE: postgres
       POSTGRES_USER: mealie
       POSTGRES_PASSWORD: ${MEALIE_POSTGRES_PASSWORD}
-      POSTGRES_SERVER: postgres
+      POSTGRES_SERVER: mealie_postgres
       POSTGRES_PORT: 5432
       POSTGRES_DB: mealie
       SMTP_HOST: ${MEALIE_SMTP_HOST}
