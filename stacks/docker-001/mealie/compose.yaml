@@ -1,0 +1,89 @@
+services:
+  mealie:
+    image: ghcr.io/mealie-recipes/mealie:latest # 
+    container_name: mealie
+    restart: always
+    # ports:
+    #     - "9925:9000" # 
+    deploy:
+      resources:
+        limits:
+          memory: 1000M # 
+    volumes:
+      - ./data:/app/data/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.mealie.entrypoints=https-internal"
+      - "traefik.http.routers.mealie.rule=Host(`mealie.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.mealie.tls=true"
+      - "traefik.http.routers.mealie.tls.certresolver=production"
+      # - "traefik.http.routers.mealie.middlewares=forwardAuth-authentik@file"
+      - "traefik.http.services.mealie.loadbalancer.server.port=9000"
+    environment:
+      # Set Backend ENV Variables Here
+      ALLOW_SIGNUP: "false"
+      PUID: 1000
+      PGID: 1000
+      TZ: America/Chicago
+      BASE_URL: https://mealie.${DOMAIN_BASE_01}
+      LOG_LEVEL: ERROR
+      # Database Settings
+      MEALIE_DB_ENGINE: mealie_postgres
+      MEALIE_POSTGRES_USER: mealie
+      MEALIE_POSTGRES_PASSWORD: ${MEALIE_POSTGRES_PASSWORD}
+      MEALIE_POSTGRES_SERVER: postgres
+      MEALIE_POSTGRES_PORT: 5432
+      MEALIE_POSTGRES_DB: mealie
+      MEALIE_SMTP_HOST: ${MEALIE_SMTP_HOST}
+      MEALIE_SMTP_PORT: ${MEALIE_SMTP_PORT}
+      MEALIE_SMTP_FROM_NAME: Mealie
+      MEALIE_SMTP_AUTH_STRATEGY: TLS
+      MEALIE_SMTP_FROM_EMAIL: ${MEALIE_SMTP_FROM_EMAIL}
+      MEALIE_SMTP_USER: ${MEALIE_SMTP_USER}
+      MEALIE_SMTP_PASSWORD: ${MEALIE_SMTP_PASSWORD}
+      MEALIE_OIDC_AUTH_ENABLED: true
+      MEALIE_OIDC_PROVIDER_NAME: authentik
+      MEALIE_OIDC_CONFIGURATION_URL: http://authentik-server:9000/application/o/mealie/.well-known/openid-configuration
+      MEALIE_OIDC_REDIRECT_URI: https://authentik.${DOMAIN_BASE_01}
+      MEALIE_OIDC_CLIENT_ID: ${MEALIE_OIDC_CLIENT_ID}
+      MEALIE_OIDC_CLIENT_SECRET: ${MEALIE_OIDC_CLIENT_SECRET}
+      MEALIE_OIDC_SIGNUP_ENABLED: false
+      MEALIE_OIDC_USER_GROUP: mealie-users
+      MEALIE_OIDC_ADMIN_GROUP: mealie-admins
+      MEALIE_OIDC_AUTO_REDIRECT: false   # Optional: The login page will be bypassed and you will be sent directly to your Identity Provider.
+      MEALIE_OIDC_REMEMBER_ME: true     # Optional: By setting this value to true, a session will be extended as if "Remember Me" was checked.
+    depends_on:
+      mealie_postgres:
+        condition: service_healthy
+    networks:
+      - management
+      - mealie_backend
+      - oidc
+
+  mealie_postgres:
+    container_name: mealie_postgres
+    image: postgres:17
+    restart: always
+    volumes:
+      - ./postgresql:/var/lib/postgresql/data
+    environment:
+      MEALIE_POSTGRES_PASSWORD: ${MEALIE_POSTGRES_PASSWORD}
+      MEALIE_POSTGRES_USER: mealie
+      MEALIE_PGUSER: mealie
+      MEALIE_POSTGRES_DB: mealie
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - mealie_backend
+
+networks:
+  management:
+    external: true
+  mealie_backend:
+    external: true
+  oidc:
+    external: true
+
