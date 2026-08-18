@@ -1,0 +1,129 @@
+---
+services:
+  postgresql:
+    image: docker.io/library/postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: ${PG_PASS:?database password required}
+      POSTGRES_USER: ${PG_USER:-authentik}
+      POSTGRES_DB: ${PG_DB:-authentik}
+      # - TZ=America/Chicago
+    env_file:
+      - .env
+    # labels:
+    #   - "com.centurylinklabs.watchtower.enable=true"
+    #   - "com.centurylinklabs.watchtower.scope=monitor"      
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d $${AUTHENTIK_POSTGRES_DB} -U $${AUTHENTIK_POSTGRES_USER}"]
+      start_period: 20s
+      interval: 30s
+      retries: 5
+      timeout: 5s
+    volumes:
+      - ./postgresql:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - authentik_backend
+  server:
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.5.6}
+    container_name: authentik-server
+    hostname: authentik-server
+    command: server
+    environment:
+      - AUTHENTIK_POSTGRESQL__HOST=postgresql
+      - AUTHENTIK_POSTGRESQL__USER=${AUTHENTIK_PG_USER:-authentik}
+      - AUTHENTIK_POSTGRESQL__NAME=${AUTHENTIK_PG_DB:-authentik}
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${AUTHENTIK_PG_PASS}
+      # (Required)  To generate a secret key run the following command:
+      #             echo $(openssl rand -base64 32)
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY}
+      # (Optional)  Enable Error Reporting
+      - AUTHENTIK_ERROR_REPORTING__ENABLED=true
+      # (Optional)  Enable Email Sending
+      - AUTHENTIK_EMAIL__HOST=${AUTHENTIK_EMAIL_HOST}
+      - AUTHENTIK_EMAIL__PORT=${AUTHENTIK_EMAIL_PORT}
+      - AUTHENTIK_EMAIL__USERNAME=${AUTHENTIK_EMAIL_USERNAME}
+      - AUTHENTIK_EMAIL__PASSWORD=${AUTHENTIK_EMAIL_PASSWORD}
+      - AUTHENTIK_EMAIL__USE_TLS=${AUTHENTIK_EMAIL_USE_TLS}
+      - AUTHENTIK_EMAIL__TIMEOUT=${AUTHENTIK_EMAIL_TIMEOUT}
+      - AUTHENTIK_EMAIL__FROM=${AUTHENTIK_EMAIL_FROM}
+    env_file:
+      - .env
+    labels:
+      # - "com.centurylinklabs.watchtower.enable=true"
+      # - "com.centurylinklabs.watchtower.scope=monitor"
+      - "traefik.enable=true"
+      - "traefik.http.routers.authentik.entrypoints=https-internal,https-external"
+      - "traefik.http.routers.authentik.rule=Host(`authentik.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.authentik.service=authentik-service"
+      - "traefik.http.routers.authentik.tls=true"
+      - "traefik.http.routers.authentik.tls.certresolver=production"
+      - "traefik.http.services.authentik-service.loadbalancer.server.port=9443"
+      - "traefik.http.services.authentik-service.loadbalancer.server.scheme=https"
+      - "traefik.docker.network=ingress"
+    # ports:
+    #   - "${COMPOSE_PORT_HTTP:-9000}:9000"
+    #   - "${COMPOSE_PORT_HTTPS:-9443}:9443"
+    volumes:
+      - ./media:/media
+      - ./custom-templates:/templates
+    depends_on:
+      - postgresql
+      # - redis
+    restart: unless-stopped
+    networks:
+      - authentik_backend
+      - ingress
+      - ldap
+      - oidc
+  worker:
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.5.6}
+    command: worker
+    environment:
+      - AUTHENTIK_POSTGRESQL__HOST=postgresql
+      - AUTHENTIK_POSTGRESQL__USER=${AUTHENTIK_PG_USER:-authentik}
+      - AUTHENTIK_POSTGRESQL__NAME=${AUTHENTIK_PG_DB:-authentik}
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${AUTHENTIK_PG_PASS}
+      # (Required)  To generate a secret key run the following command:
+      #             echo $(openssl rand -base64 32)
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY}
+      # (Optional)  Enable Error Reporting
+      - AUTHENTIK_ERROR_REPORTING__ENABLED=true
+      # (Optional)  Enable Email Sending
+      - AUTHENTIK_EMAIL__HOST=${AUTHENTIK_EMAIL_HOST}
+      - AUTHENTIK_EMAIL__PORT=${AUTHENTIK_EMAIL_PORT}
+      - AUTHENTIK_EMAIL__USERNAME=${AUTHENTIK_EMAIL_USERNAME}
+      - AUTHENTIK_EMAIL__PASSWORD=${AUTHENTIK_EMAIL_PASSWORD}
+      - AUTHENTIK_EMAIL__USE_TLS=${AUTHENTIK_EMAIL_USE_TLS}
+      - AUTHENTIK_EMAIL__TIMEOUT=${AUTHENTIK_EMAIL_TIMEOUT}
+      # - AUTHENTIK_EMAIL__FROM=${EMAIL_FROM}
+    # (Optional)  When using the docker socket integration
+    #             See more for the docker socket integration here:
+    #             https://goauthentik.io/docs/outposts/integrations/docker
+    user: root
+    env_file:
+      - .env
+    # labels:
+    #   - "com.centurylinklabs.watchtower.enable=true"
+    #   - "com.centurylinklabs.watchtower.scope=monitor"      
+    volumes:
+      # (Optional)  When using the docker socket integration
+      # - /run/docker.sock:/run/docker.sock
+      - ./media:/media
+      - ./certs:/certs
+      - ./custom-templates:/templates
+    depends_on:
+      - postgresql
+      # - redis
+    restart: unless-stopped
+    networks:
+      - authentik_backend
+
+networks:
+  authentik_backend:
+    external: true
+  ingress:
+    external: true
+  ldap:
+    external: true
+  oidc:
+    external: true
