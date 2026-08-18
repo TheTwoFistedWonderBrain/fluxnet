@@ -1,0 +1,48 @@
+services:
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+      - VERSION=docker
+      - PLEX_CLAIM=${PLEX_CLAIM}
+    labels:
+      # - "com.centurylinklabs.watchtower.enable=true"
+      # - "com.centurylinklabs.watchtower.scope=update"
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"
+      - "traefik.enable=true"
+      - "traefik.http.routers.plex-internal.entrypoints=https-internal"
+      - "traefik.http.routers.plex-internal.rule=Host(`plex.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.plex-internal.tls=true"
+      - "traefik.http.routers.plex-internal.tls.certresolver=production"
+      - "traefik.http.routers.plex-external.entrypoints=https-external"
+      - "traefik.http.routers.plex-external.rule=Host(`plex.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.plex-external.tls=true"
+      - "traefik.http.routers.plex-external.middlewares=cloudflarewarp@file"
+      - "traefik.http.routers.plex-external.tls.certresolver=production"
+      - "traefik.http.services.plex.loadbalancer.server.port=32400"
+      # - homepage.widget.fields=["streams", "movies", "tv", "albums"]
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - /dev/shm:/transcode
+      - ./config:/config
+      - /mnt/data/media/fan_edits:/media/fan_edits
+      - /mnt/data/media/web_series:/media/web_series
+      - /mnt/data/media/movies:/media/movies
+      - /mnt/data/media/tv:/media/tv
+      - /mnt/data/media/anime/movies:/anime/movies
+      - /mnt/data/media/anime/series:/anime/series
+      - /mnt/data/media/audio/music:/media/music
+      - /mnt/data/media/placeholder/movies:/media/placeholder-movies
+      - /mnt/data/media/placeholder/tv:/media/placeholder-tv
+      - /mnt/docker_extras/backup/apps/plex:/backup
+    restart: unless-stopped
+    networks:
+      - servarr
+networks:
+  servarr:
+    external: true
