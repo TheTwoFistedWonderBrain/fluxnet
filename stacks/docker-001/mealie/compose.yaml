@@ -19,6 +19,7 @@ services:
       - "traefik.http.routers.mealie.tls.certresolver=production"
       # - "traefik.http.routers.mealie.middlewares=forwardAuth-authentik@file"
       - "traefik.http.services.mealie.loadbalancer.server.port=9000"
+      - "traefik.docker.network=management"
     environment:
       # Set Backend ENV Variables Here
       ALLOW_SIGNUP: "false"
