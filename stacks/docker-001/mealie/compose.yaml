@@ -41,7 +41,7 @@ services:
       SMTP_FROM_EMAIL: ${MEALIE_SMTP_FROM_EMAIL}
       SMTP_USER: ${MEALIE_SMTP_USER}
       SMTP_PASSWORD: ${MEALIE_SMTP_PASSWORD}
-      OIDC_AUTH_ENABLED: true
+      OIDC_AUTH_ENABLED: false
       OIDC_PROVIDER_NAME: authentik
       OIDC_CONFIGURATION_URL: http://authentik-server:9000/application/o/mealie/.well-known/openid-configuration
       OIDC_REDIRECT_URI: https://authentik.${DOMAIN_BASE_01}
