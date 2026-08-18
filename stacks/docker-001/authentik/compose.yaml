@@ -13,7 +13,7 @@ services:
     #   - "com.centurylinklabs.watchtower.enable=true"
     #   - "com.centurylinklabs.watchtower.scope=monitor"      
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d $${AUTHENTIK_POSTGRES_DB} -U $${AUTHENTIK_POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -d $${AUTHENTIK_PG_DB} -U $${AUTHENTIK_PG_USER}"]
       start_period: 20s
       interval: 30s
       retries: 5
