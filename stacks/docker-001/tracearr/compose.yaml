@@ -1,0 +1,51 @@
+services:
+  tracearr:
+    image: ghcr.io/connorgallopo/tracearr:supervised-next
+    container_name: tracearr
+    hostname: tracearr
+    shm_size: 256mb  # Required for PostgreSQL shared memory
+    # ports:
+    #   - "${PORT:-3000}:3000"
+    labels:
+      # - "docker.stack=servarr"
+      # - "wud.watch=true"
+      # - "wud.trigger.include=discord.batch,docker.manual"
+      - "traefik.enable=true"
+      - "traefik.http.routers.tracearr.entrypoints=https-internal"
+      - "traefik.http.routers.tracearr.rule=Host(`tracearr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.tracearr.tls=true"
+      - "traefik.http.routers.tracearr.tls.certresolver=production"
+      - "traefik.http.routers.tracearr.middlewares=forwardAuth-authentik@file"
+      - "traefik.http.routers.tracearr-internal-lunasea.entrypoints=https-internal-lunasea"
+      - "traefik.http.routers.tracearr-internal-lunasea.rule=Host(`tracearr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.tracearr-internal-lunasea.tls=true"
+      - "traefik.http.routers.tracearr-internal-lunasea.tls.certresolver=production"
+      - "traefik.http.services.tracearr.loadbalancer.server.port=3000"
+      # - "traefik.docker.network=management"
+    environment:
+      - TZ=America/Chicago
+      - LOG_LEVEL=info
+      - TRUST_PROXY=true
+      # Optional: Override auto-generated secrets
+      # - JWT_SECRET=${JWT_SECRET}
+      # - COOKIE_SECRET=${COOKIE_SECRET}
+    volumes:
+      # - tracearr_postgres:/data/postgres
+      # - tracearr_redis:/data/redis
+      # - tracearr_data:/data/tracearr
+      # Bind mount alternative (uncomment and adjust paths):
+      - ./data/postgres:/data/postgres
+      - ./data/redis:/data/redis
+      - ./data/tracearr:/data/tracearr
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3000/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+    networks:
+      - servarr
+networks:
+  servarr:
+    external: true
