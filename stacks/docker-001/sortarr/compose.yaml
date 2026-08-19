@@ -1,0 +1,53 @@
+services:
+  sortarr:
+    image: ghcr.io/jaredharper1/sortarr:latest
+    # image: traefik/whoami
+    # Optional: set platform (e.g., linux/arm64/v8 for Apple Silicon).
+    # platform: linux/arm64/v8    
+    container_name: sortarr
+    hostname: sortarr
+    # ports:
+    #   - "9595:8787"
+    labels:
+      # - "docker.stack=servarr"
+      # - "com.centurylinklabs.watchtower.enable=true"
+      # - "com.centurylinklabs.watchtower.scope=update"
+      # - "wud.watch=true"
+      # - "wud.trigger.include=discord.batch,docker.manual"
+      - "traefik.enable=true"
+      - "traefik.http.routers.sortarr.entrypoints=https-internal"
+      - "traefik.http.routers.sortarr.rule=Host(`sortarr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.sortarr.tls=true"
+      - "traefik.http.routers.sortarr.tls.certresolver=production"
+      # - "traefik.http.routers.sortarr.middlewares=forwardAuth-authentik@file"
+      # - "traefik.http.services.sortarr.loadbalancer.passhostheader=true"
+      # - "traefik.http.routers.sortarr.tls.passthrough=true"
+      - "traefik.http.services.sortarr.loadbalancer.server.port=8787"
+      # - "traefik.http.services.sortarr.loadbalancer.server.port=80"
+      - "traefik.http.middlewares.sortarr.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.sortarr.headers.customrequestheaders.X-Forwarded-Host=sortarr.${DOMAIN_BASE_01}"
+      - "traefik.http.middlewares.sortarr.headers.customrequestheaders.X-Forwarded-Port=443"
+      - "traefik.http.routers.sortarr.middlewares=sortarr@docker"
+    environment:
+      - SORTARR_CONFIG_PATH=/data/sortarr.env
+      - CACHE_SECONDS=300
+      # Optional: Use Reverse Proxy? ie. NGINX, Cloudflare, Caddy, Traefik, Apache? Use this:
+      # eg. SORTARR_PROXY_HOPS=1
+      # Optional: Map container paths to host paths for the UI
+      # eg. RADARR_PATH_MAP=/movies:/mnt/media/movies
+      - SORTARR_PROXY_HOPS=1
+      - RADARR_PATH_MAP=/anime/movies:/mnt/data/media/anime/movies
+      - RADARR_PATH_MAP=/media/movies:/mnt/data/media/movies
+      - SONARR_PATH_MAP=/anime/series:/mnt/data/media/anime/series
+      - SONARR_PATH_MAP=/media/tv:/mnt/data/media/tv
+      - SONARR_PATH_MAP=/media/web_series:/mnt/data/media/web_series
+    volumes:
+      - "./data:/data"
+      # Optional: Mount .env for persistence if using default paths
+      # eg. /path/to/config/.env:/app/.env    
+    restart: unless-stopped
+    networks:
+      - servarr
+networks:
+  servarr:
+    external: true
