@@ -1,0 +1,21 @@
+services:
+  protonmail-bridge:
+    # image: shenxn/protonmail-bridge:latest
+    image: dancwilliams/protonmail-bridge:latest  
+    container_name: protonmail-bridge
+    ports:
+      - 1025:25/tcp
+      - 1143:143/tcp
+    restart: unless-stopped
+    # labels:
+      # - "com.centurylinklabs.watchtower.enable=true"
+    volumes:
+      - ./config:/root
+    networks:
+      - management
+networks:
+  management:
+    external: true
+
+# docker compose run protonmail-bridge init
+# docker run --rm -it -v protonmail:/root shenxn/protonmail-bridge init
