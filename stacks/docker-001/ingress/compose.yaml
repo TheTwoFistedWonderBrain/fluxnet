@@ -1,0 +1,81 @@
+services:
+  traefik:
+    image: docker.io/library/traefik:latest
+    container_name: traefik
+    hostname: traefik
+    labels:
+      # - "com.centurylinklabs.watchtower.enable=true"
+      # - "com.centurylinklabs.watchtower.scope=monitor"
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.entrypoints=https-internal"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=production"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+    ports:
+      - 80:80
+      - 443:443
+      - 81:81
+      - 444:444
+      - 445:445
+      # - 18666:18666
+      # -- (Optional) Enable Dashboard, don't do in production
+      # - 8080:8080
+    volumes:
+      - /run/docker.sock:/run/docker.sock:ro
+      - ./traefik/config/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - ./traefik/config/config.yaml:/etc/traefik/config.yaml:ro
+      - ./traefik/config/external-hosts.yaml:/etc/traefik/external-hosts.yaml:ro
+      # - ./traefik/config/dynamic_config:/etc/traefik/dynamic_config
+      - ./traefik/config/conf:/etc/traefik/conf
+      - ./traefik/config/certs:/etc/traefik/certs
+      - ./traefik/log:/var/log
+    # -- (Optional) When using Cloudflare as Cert Resolver
+    environment:
+      - CF_DNS_API_TOKEN=${TRAEFIK_CF_DNS_API_TOKEN}
+    # -- (Optional) When using a custom network
+    networks:
+      - ingress
+      - management
+      - servarr
+      - checkmate
+      # - homepage
+    restart: unless-stopped
+  # whoami:
+  #   image: traefik/whoami
+  #   container_name: whoami
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.whoami.entrypoints=https-internal,https-external"
+  #     - "traefik.http.routers.whoami.rule=Host(`whoami.cookiecollective.net`)"
+  #     - "traefik.http.routers.whoami.tls=true"
+  #     - "traefik.http.routers.whoami.tls.certresolver=production"
+  #     - "traefik.http.routers.whoami.middlewares=cloudflarewarp@file"
+  #     # - "traefik.http.services.whoami.loadbalancer.server.port=80"
+  #   networks:
+  #     - ingress
+  tunnel:
+    container_name: traefik-cookiecollective-https
+    image: cloudflare/cloudflared
+    restart: unless-stopped
+    command: tunnel run
+    labels:
+    #   - "com.centurylinklabs.watchtower.enable=true"
+    #   - "com.centurylinklabs.watchtower.scope=monitor"  
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"  
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARED_TUNNEL_TOKEN}
+    networks:
+      - ingress
+networks:
+  ingress:
+    external: true
+  management:
+    external: true
+  servarr:
+    external: true
+  checkmate:
+    external: true
