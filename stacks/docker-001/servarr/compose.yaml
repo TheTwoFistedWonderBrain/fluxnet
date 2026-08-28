@@ -1,0 +1,513 @@
+services:
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    hostname: bazarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    labels:
+      - "docker.stack=servarr"
+      # - "com.centurylinklabs.watchtower.enable=true"
+      # - "com.centurylinklabs.watchtower.scope=update"
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"
+      - "traefik.enable=true"
+      - "traefik.http.routers.bazarr.entrypoints=https-internal,https-external"
+      - "traefik.http.routers.bazarr.rule=Host(`bazarr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.bazarr.tls=true"
+      - "traefik.http.routers.bazarr.tls.certresolver=production"
+      - "traefik.http.routers.bazarr.middlewares=forwardAuth-authentik@file"
+      - "traefik.http.routers.bazarr-internal-lunasea.entrypoints=https-internal-lunasea"
+      - "traefik.http.routers.bazarr-internal-lunasea.rule=Host(`bazarr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.bazarr-internal-lunasea.tls.certresolver=production"
+      - "traefik.http.services.bazarr.loadbalancer.server.port=6767"
+    restart: unless-stopped
+    volumes:
+      - ./bazarr/config:/config
+      - /mnt/data/media/tv:/media/tv
+      - /mnt/data/media/movies:/media/movies
+      - /mnt/data/media/anime/movies:/anime/movies
+      - /mnt/data/media/anime/series:/anime/series
+      - /mnt/data/media/web_series:/media/web_series
+      - /mnt/docker_extras/backup/stacks/servarr/bazarr:/backup
+    networks:
+      - servarr
+  # calendarr-daily:
+  #   image: ghcr.io/jordanlambrecht/calendarr:latest
+  #   container_name: calendarr-daily
+  #   environment:
+  #     TZ: America/Chicago
+  #     USE_DISCORD: "true"
+  #     DISCORD_WEBHOOK_URL: ${CALENDARR_DISCORD_WEBHOOK_DAILY_URL}
+  #     CALENDAR_URLS: >
+  #       [{
+  #         "url":"${CALENDARR_ICS_URL_SONARR_1}",
+  #         "type":"tv"
+  #       },
+  #       {
+  #         "url":"${CALENDARR_ICS_URL_RADARR_1}",
+  #         "type":"movie"
+  #       }]
+  #     SCHEDULE_TYPE: DAILY
+  #     CALENDAR_RANGE: DAY
+  #     RUN_ON_STARTUP: "true"
+  #     RUN_TIME: 06:00
+  #   labels:
+  #     - "docker.stack=servarr"
+  #     # - "com.centurylinklabs.watchtower.enable=true"
+  #     # - "com.centurylinklabs.watchtower.scope=update"
+  #     - "wud.watch=true"
+  #     - "wud.trigger.include=discord.batch,docker.manual"
+  #   volumes:
+  #     - .calendarr/daily/logs:/app/logs:rw
+  #     - .calendarr/daily/custom_footers:/app/custom_footers:rw
+  #   restart: unless-stopped
+  #   networks:
+  #     - servarr
+  calendarr-weekly:
+    image: ghcr.io/jordanlambrecht/calendarr:latest
+    container_name: calendarr-weekly
+    environment:
+      TZ: America/Chicago
+      USE_DISCORD: "true"
+      DISCORD_WEBHOOK_URL: ${CALENDARR_DISCORD_WEBHOOK_WEEKLY_URL}
+      CALENDAR_URLS: >
+        [{
+          "url":"${CALENDARR_ICS_URL_SONARR_1}",
+          "type":"tv"
+        },
+        {
+          "url":"${CALENDARR_ICS_URL_RADARR_1}",
+          "type":"movie"
+        }]
+      START_WEEK_ON_MONDAY: "true"
+      SCHEDULE_TYPE: WEEKLY
+      SCHEDULE_DAY: "0"
+      CALENDAR_RANGE: WEEK
+      RUN_ON_STARTUP: "false"
+      RUN_TIME: 06:00
+      # CUSTOM_HEADER: "TV Guide - What's Up This Week"
+    labels:
+      - "docker.stack=servarr"
+      # - "com.centurylinklabs.watchtower.enable=true"
+      # - "com.centurylinklabs.watchtower.scope=update"
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"
+    volumes:
+      - ./calendarr/weekly/logs:/app/logs:rw
+      - ./calendarr/weekly/custom_footers:/app/custom_footers:rw
+    restart: unless-stopped
+    networks:
+      - servarr
+  # kometa:
+  #   image: kometateam/kometa:latest
+  #   container_name: kometa
+  #   environment:
+  #     - TZ=America/Chicago
+  #     - KOMETA_RUN=true
+  #     - KOMETA_TEST=false
+  #   labels:
+  #     - "docker.stack=servarr"
+  #     # - "com.centurylinklabs.watchtower.enable=true"
+  #     # - "com.centurylinklabs.watchtower.scope=update"
+  #     - "wud.watch=true"
+  #     - "wud.trigger.include=discord.batch,docker.manual"
+  #   volumes:
+  #     - ./kometa/config:/config:rw
+  #   restart: unless-stopped
+  #   networks:
+  #     - servarr
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    hostname: lidarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    labels:
+      - "docker.stack=servarr"
+      # - "com.centurylinklabs.watchtower.enable=true"
+      # - "com.centurylinklabs.watchtower.scope=update"
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"
+      - "traefik.enable=true"
+      - "traefik.http.routers.lidarr-internal.entrypoints=https-internal"
+      - "traefik.http.routers.lidarr-internal.rule=Host(`lidarr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.lidarr-internal.tls=true"
+      - "traefik.http.routers.lidarr-internal.tls.certresolver=production"
+      - "traefik.http.routers.lidarr-internal.middlewares=forwardAuth-authentik@file"
+      - "traefik.http.routers.lidarr-external.entrypoints=https-external"
+      - "traefik.http.routers.lidarr-external.rule=Host(`lidarr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.lidarr-external.tls=true"
+      - "traefik.http.routers.lidarr-external.tls.certresolver=production"
+      - "traefik.http.routers.lidarr-external.middlewares=forwardAuth-authentik@file"
+      - "traefik.http.routers.lidarr-internal-lunasea.entrypoints=https-internal-lunasea"
+      - "traefik.http.routers.lidarr.rule=Host(`lidarr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.lidarr.tls=true"
+      - "traefik.http.routers.lidarr.tls.certresolver=production"
+      - "traefik.http.services.lidarr.loadbalancer.server.port=8686"
+    volumes:
+      - ./lidarr/config:/config
+      - /mnt/data/media/audio:/audio #optional
+      - /mnt/data/media/temp:/temp
+      - /mnt/data/media/incoming:/slsk_downloads
+      - /mnt/data/torrents/audio:/torrents/audio
+      - /mnt/data/usenet:/usenet
+      - /mnt/docker_extras/backup/stacks/servarr/lidarr:/backup
+    networks:
+      - servarr
+    restart: unless-stopped
+  maintainerr:
+    image: ghcr.io/maintainerr/maintainerr:latest # or jorenn92/maintainerr:latest
+    container_name: maintainerr
+    user: 1000:1000
+    environment:
+      - TZ=America/Chicago
+      - DEBUG=true # uncomment to enable debug logs
+    labels:
+      - "docker.stack=servarr"
+      # - "com.centurylinklabs.watchtower.enable=true"
+      # - "com.centurylinklabs.watchtower.scope=update"
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"
+      - "traefik.enable=true"
+      - "traefik.http.routers.maintainerr.entrypoints=https-internal"
+      - "traefik.http.routers.maintainerr.rule=Host(`maintainerr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.maintainerr.tls=true"
+      - "traefik.http.routers.maintainerr.tls.certresolver=production"
+      - "traefik.http.services.maintainerr.loadbalancer.server.port=6246"
+    # ports:
+    #   - 6246:6246
+    restart: unless-stopped
+    volumes:
+      - ./maintainerr/data:/opt/data
+    networks:
+      - servarr
+  notifiarr:
+    container_name: notifiarr
+    hostname: notifiarr
+    image: golift/notifiarr
+    restart: unless-stopped
+    labels:
+      - "docker.stack=servarr"
+      # - "com.centurylinklabs.watchtower.enable=true"
+      # - "com.centurylinklabs.watchtower.scope=update"
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"
+      - "traefik.enable=true"
+      - "traefik.http.routers.notifiarr.entrypoints=https-internal"
+      - "traefik.http.routers.notifiarr.rule=Host(`notifiarr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.notifiarr.tls=true"
+      - "traefik.http.routers.notifiarr.tls.certresolver=production"
+      - "traefik.http.services.notifiarr.loadbalancer.server.port=5454"
+    volumes:
+      - ./notifiarr/config:/config
+      - ./notifiarr/logs:/logs
+      - /var/run/utmp:/var/run/utmp
+    networks:
+      - servarr
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    hostname: prowlarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    labels:
+      - "docker.stack=servarr"
+      # - "com.centurylinklabs.watchtower.enable=true"
+      # - "com.centurylinklabs.watchtower.scope=update"
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"
+      - "traefik.enable=true"
+      - "traefik.http.routers.prowlarr.entrypoints=https-internal,https-external"
+      - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.prowlarr.tls=true"
+      - "traefik.http.routers.prowlarr.tls.certresolver=production"
+      - "traefik.http.routers.prowlarr.middlewares=forwardAuth-authentik@file"
+      - "traefik.http.routers.prowlarr-internal-lunasea.entrypoints=https-internal-lunasea"
+      - "traefik.http.routers.prowlarr-internal-lunasea.rule=Host(`prowlarr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.prowlarr-internal-lunasea.tls=true"
+      - "traefik.http.routers.prowlarr-internal-lunasea.tls.certresolver=production"
+      - "traefik.http.services.prowlarr.loadbalancer.server.port=9696"
+    restart: unless-stopped
+    volumes:
+      - ./prowlarr/config:/config
+      - /mnt/docker_extras/backup/stacks/servarr/prowlarr:/backup
+    networks:
+      - servarr
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    hostname: radarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    labels:
+      - "docker.stack=servarr"
+      # - "com.centurylinklabs.watchtower.enable=true"
+      # - "com.centurylinklabs.watchtower.scope=update"
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"
+      - "traefik.enable=true"
+      - "traefik.http.routers.radarr-internal.entrypoints=https-internal"
+      - "traefik.http.routers.radarr-internal.rule=Host(`radarr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.radarr-internal.tls=true"
+      - "traefik.http.routers.radarr-internal.tls.certresolver=production"
+      - "traefik.http.routers.radarr-internal.middlewares=forwardAuth-authentik@file"
+      - "traefik.http.routers.radarr-external.entrypoints=https-external"
+      - "traefik.http.routers.radarr-external.rule=Host(`radarr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.radarr-external.tls=true"
+      - "traefik.http.routers.radarr-external.tls.certresolver=production"
+      - "traefik.http.routers.radarr-external.middlewares=forwardAuth-authentik@file"
+      - "traefik.http.routers.radarr-internal-lunasea.entrypoints=https-internal-lunasea"
+      - "traefik.http.routers.radarr-internal-lunasea.rule=Host(`radarr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.radarr-internal-lunasea.tls=true"
+      - "traefik.http.routers.radarr-internal-lunasea.tls.certresolver=production"
+      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
+    restart: unless-stopped
+    volumes:
+      - ./radarr/config:/config
+      - /mnt/data/media/temp:/temp
+      - /mnt/data/torrents/movies:/torrents/movies
+      - /mnt/data/media/movies:/media/movies
+      - /mnt/data/media/anime/movies:/anime/movies
+      - /mnt/data/usenet:/usenet
+      - /mnt/docker_extras/backup/stacks/servarr/radarr:/backup
+    networks:
+      - servarr
+  requestrr:
+    image: thomst08/requestrr
+    container_name: requestrr
+    hostname: requestrr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+      - REQUESTRR_PORT=4545
+    # ports:
+    #   - 4545:4545
+    labels:
+      - "docker.stack=servarr"
+      # - "com.centurylinklabs.watchtower.enable=true"
+      # - "com.centurylinklabs.watchtower.scope=update"
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"
+      - "traefik.enable=true"
+      - "traefik.http.routers.requestrr.entrypoints=https-internal"
+      - "traefik.http.routers.requestrr.rule=Host(`requestrr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.requestrr.tls=true"
+      - "traefik.http.routers.requestrr.tls.certresolver=production"
+      - "traefik.http.routers.requestrr.middlewares=forwardAuth-authentik@file"
+      - "traefik.http.services.requestrr.loadbalancer.server.port=4545"
+    restart: unless-stopped
+    volumes:
+      - ./requestrr/config:/root/config
+    networks:
+      - servarr
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    hostname: sabnzbd
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    labels:
+      - "docker.stack=servarr"
+      # - "com.centurylinklabs.watchtower.enable=true"
+      # - "com.centurylinklabs.watchtower.scope=update"
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"
+      - "traefik.enable=true"
+      - "traefik.http.routers.sabnzbd-internal.entrypoints=https-internal"
+      - "traefik.http.routers.sabnzbd-internal.rule=Host(`sabnzbd.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.sabnzbd-internal.tls=true"
+      - "traefik.http.routers.sabnzbd-internal.tls.certresolver=production"
+      - "traefik.http.routers.sabnzbd-internal.middlewares=forwardAuth-authentik@file"
+      - "traefik.http.routers.sabnzbd-internal-lunasea.entrypoints=https-internal-lunasea"
+      - "traefik.http.routers.sabnzbd-internal-lunasea.rule=Host(`sabnzbd.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.sabnzbd-internal-lunasea.tls=true"
+      - "traefik.http.routers.sabnzbd-internal-lunasea.tls.certresolver=production"
+      - "traefik.http.services.sabnzbd.loadbalancer.server.port=8080"
+    volumes:
+      - ./sabnzbd/config:/config
+      - /mnt/data/usenet:/usenet
+      - /mnt/docker_extras/backup/stacks/servarr/sabnzbd:/backup
+    restart: unless-stopped
+    networks:
+      - servarr
+  seerr:
+    image: ghcr.io/seerr-team/seerr:latest
+    init: true
+    container_name: seerr
+    hostname: seerr
+    # healthcheck:
+    #   test: wget --no-verbose --tries-1 --spider http://localhost:5055/api/v1/status || exit 1
+    #   interval: 15s
+    #   timeout: 3s
+    #   retries: 3
+    #   start_period: 20s
+    environment:
+      # - PUID=1000
+      # - PGID=1000
+      - LOG_LEVEL=debug
+      - TZ=America/Chicago
+    labels:
+      - "docker.stack=servarr"
+      # - "com.centurylinklabs.watchtower.enable=true"
+      # - "com.centurylinklabs.watchtower.scope=update"
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"
+      - "traefik.enable=true"
+      - "traefik.http.routers.seerr.entrypoints=https-internal,https-external"
+      - "traefik.http.routers.seerr.rule=Host(`requests.ofmorphe.us`)"
+      - "traefik.http.routers.seerr.tls=true"
+      - "traefik.http.routers.seerr.tls.certresolver=production"
+      - "traefik.http.routers.seerr-internal-lunasea.entrypoints=https-internal-lunasea"
+      - "traefik.http.routers.seerr-internal-lunasea.rule=Host(`requests.ofmorphe.us`)"
+      - "traefik.http.routers.seerr-internal-lunasea.tls=true"
+      - "traefik.http.routers.seerr-internal-lunasea.tls.certresolver=production"
+      - "traefik.http.services.seerr.loadbalancer.server.port=5055"
+    restart: unless-stopped
+    volumes:
+      - ./seerr/config:/app/config
+    networks:
+      - servarr
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    hostname: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    labels:
+      - "docker.stack=servarr"
+      # - "com.centurylinklabs.watchtower.enable=true"
+      # - "com.centurylinklabs.watchtower.scope=update"
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"
+      - "traefik.enable=true"
+      - "traefik.http.routers.sonarr-internal.entrypoints=https-internal"
+      - "traefik.http.routers.sonarr-internal.rule=Host(`sonarr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.sonarr-internal.tls=true"
+      - "traefik.http.routers.sonarr-internal.tls.certresolver=production"
+      - "traefik.http.routers.sonarr-internal.middlewares=forwardAuth-authentik@file"
+      - "traefik.http.routers.sonarr-external.entrypoints=https-external"
+      - "traefik.http.routers.sonarr-external.rule=Host(`sonarr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.sonarr-external.tls=true"
+      - "traefik.http.routers.sonarr-external.tls.certresolver=production"
+      - "traefik.http.routers.sonarr-external.middlewares=forwardAuth-authentik@file"
+      - "traefik.http.routers.sonarr-internal-lunasea.entrypoints=https-internal-lunasea"
+      - "traefik.http.routers.sonarr-internal-lunasea.rule=Host(`sonarr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.sonarr-internal-lunasea.tls=true"
+      - "traefik.http.routers.sonarr-internal-lunasea.tls.certresolver=production"
+      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
+    restart: unless-stopped
+    volumes:
+      - ./sonarr/config:/config
+      - /mnt/data/media/temp:/temp
+      - /mnt/data/torrents/tv:/torrents/tv
+      - /mnt/data/media/tv:/media/tv
+      - /mnt/data/media/anime/series:/anime/series
+      - /mnt/data/media/web_series:/media/web_series
+      - /mnt/data/usenet:/usenet
+      - /mnt/docker_extras/backup/stacks/servarr/sonarr:/backups
+    networks:
+      - servarr
+  tautulli:
+    image: lscr.io/linuxserver/tautulli:latest
+    container_name: tautulli
+    hostname: tautulli
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+    labels:
+      - "docker.stack=servarr"
+      # - "com.centurylinklabs.watchtower.enable=true"
+      # - "com.centurylinklabs.watchtower.scope=update"
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"
+      - "traefik.enable=true"
+      - "traefik.http.routers.tautulli-internal.entrypoints=https-internal"
+      - "traefik.http.routers.tautulli-internal.rule=Host(`tautulli.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.tautulli-internal.tls=true"
+      - "traefik.http.routers.tautulli-internal.tls.certresolver=production"
+      - "traefik.http.routers.tautulli-internal.middlewares=forwardAuth-authentik@file"
+      - "traefik.http.routers.tautulli-external.entrypoints=https-external"
+      - "traefik.http.routers.tautulli-external.rule=Host(`tautulli.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.tautulli-external.tls=true"
+      - "traefik.http.routers.tautulli-external.tls.certresolver=production"
+      - "traefik.http.routers.tautulli-external.middlewares=forwardAuth-authentik@file"
+      - "traefik.http.routers.tautulli-internal-lunasea.entrypoints=https-internal-lunasea"
+      - "traefik.http.routers.tautulli-internal-lunasea.rule=Host(`tautulli.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.tautulli-internal-lunasea.tls=true"
+      - "traefik.http.routers.tautulli-internal-lunasea.tls.certresolver=production"
+      - "traefik.http.services.tautulli-service.loadbalancer.server.port=8181"
+    restart: unless-stopped
+    volumes:
+      - ./tautulli/config:/config
+      - /mnt/docker/apps/plex/config/Library/Application Support/Plex Media Server/Logs:/plex_logs
+      - /mnt/docker_extras/backup/stacks/servarr/tautulli:/config/backups
+    networks:
+      - servarr
+  unpackerr:
+    image: golift/unpackerr
+    container_name: unpackerr
+    hostname: unpackerr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+      - UN_DIR_MODE=0755
+      - UN_FILE_MODE=0644
+    labels:
+      - "docker.stack=servarr"
+      # - "com.centurylinklabs.watchtower.enable=true"
+      # - "com.centurylinklabs.watchtower.scope=update"
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"
+    restart: unless-stopped
+    volumes:
+      - ./unpackerr/config:/config
+      - /mnt/data/torrents:/torrents
+    networks:
+      - servarr
+  wizarr:
+    container_name: wizarr
+    image: ghcr.io/wizarrrr/wizarr
+    # ports:
+    #   - 5690:5690
+    volumes:
+      - ./wizarr/config/database:/data/database
+      - ./wizarr/config/wizard:/data/wizard_steps
+    environment:
+      - PUID=1000 #Set UID
+      - PGID=1000 #Set GID
+      - DISABLE_BUILTIN_AUTH=false #Set to true ONLY if you are using another auth provider (Authelia, Authentik, etc)
+      - TZ=America/Chicago #Set your timezone here
+    labels:
+      - "docker.stack=servarr"
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"
+      - "traefik.enable=true"
+      - "traefik.http.routers.wizarr.entrypoints=https-internal,https-external"
+      - "traefik.http.routers.wizarr.rule=Host(`invites.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.wizarr.tls=true"
+      - "traefik.http.routers.wizarr.tls.certresolver=production"
+      - "traefik.http.services.wizarr.loadbalancer.server.port=5690"
+    networks:
+      - servarr
+    restart: unless-stopped
+networks:
+  servarr:
+    external: true
+  # ldap:
+  #   external: true
