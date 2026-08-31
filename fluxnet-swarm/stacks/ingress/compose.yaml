@@ -6,7 +6,7 @@ services:
   nginx-proxy-manager:
     image: 'jc21/nginx-proxy-manager:latest'
     # container_name: nginx-proxy-manager
-    restart: unless-stopped
+    # restart: unless-stopped
     deploy:
       replicas: 1
       restart_policy:
@@ -34,6 +34,19 @@ services:
     volumes:
       - ./nginx-proxy-manager/data:/data
       - ./nginx-proxy-manager/letsencrypt:/etc/letsencrypt
+    networks:
+      - proxy
+  tunnel:
+    image: cloudflare/cloudflared
+    # restart: unless-stopped
+    command: tunnel run
+    # labels:
+    # #   - "com.centurylinklabs.watchtower.enable=true"
+    # #   - "com.centurylinklabs.watchtower.scope=monitor"  
+    #   - "wud.watch=true"
+    #   - "wud.trigger.include=discord.batch,docker.manual"  
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARED_TUNNEL_TOKEN_02}
     networks:
       - proxy
 
