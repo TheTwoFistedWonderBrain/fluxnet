@@ -55,6 +55,7 @@ services:
     privileged: true
     environment:
       - UOS_SYSTEM_IP=unifi.${DOMAIN_BASE_01}
+      - UOS_SHOW_JOURNAL=true
     labels:
       # - "com.centurylinklabs.watchtower.enable=true"
       # - "com.centurylinklabs.watchtower.scope=monitor"
