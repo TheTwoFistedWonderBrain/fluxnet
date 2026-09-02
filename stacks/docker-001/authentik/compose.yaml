@@ -60,9 +60,9 @@ services:
       - "traefik.http.services.authentik-service.loadbalancer.server.port=9443"
       - "traefik.http.services.authentik-service.loadbalancer.server.scheme=https"
       - "traefik.docker.network=ingress"
-    # ports:
-    #   - "${COMPOSE_PORT_HTTP:-9000}:9000"
-    #   - "${COMPOSE_PORT_HTTPS:-9443}:9443"
+    ports:
+      - "${COMPOSE_PORT_HTTP:-9000}:9000"
+      - "${COMPOSE_PORT_HTTPS:-9443}:9443"
     volumes:
       - ./media:/media
       - ./custom-templates:/templates
