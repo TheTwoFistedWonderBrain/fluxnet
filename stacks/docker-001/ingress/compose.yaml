@@ -43,19 +43,19 @@ services:
       - checkmate
       # - homepage
     restart: unless-stopped
-  # whoami:
-  #   image: traefik/whoami
-  #   container_name: whoami
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.whoami.entrypoints=https-internal,https-external"
-  #     - "traefik.http.routers.whoami.rule=Host(`whoami.cookiecollective.net`)"
-  #     - "traefik.http.routers.whoami.tls=true"
-  #     - "traefik.http.routers.whoami.tls.certresolver=production"
-  #     - "traefik.http.routers.whoami.middlewares=cloudflarewarp@file"
-  #     # - "traefik.http.services.whoami.loadbalancer.server.port=80"
-  #   networks:
-  #     - ingress
+  whoami:
+    image: traefik/whoami
+    container_name: whoami
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.whoami.entrypoints=https-internal,https-external"
+      - "traefik.http.routers.whoami.rule=Host(`whoami.cookiecollective.net`)"
+      - "traefik.http.routers.whoami.tls=true"
+      - "traefik.http.routers.whoami.tls.certresolver=production"
+      # - "traefik.http.routers.whoami.middlewares=cloudflarewarp@file"
+      - "traefik.http.services.whoami.loadbalancer.server.port=80"
+    networks:
+      - management
   tunnel:
     container_name: traefik-cookiecollective-https
     image: cloudflare/cloudflared
