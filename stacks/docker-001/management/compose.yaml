@@ -54,8 +54,9 @@ services:
     container_name: unifi-os-server
     privileged: true
     environment:
-      - UOS_SYSTEM_IP=unifi.${DOMAIN_BASE_01}
+      - UOS_SYSTEM_IP=${HOST_IP_001}
       - UOS_SHOW_JOURNAL=true
+      - TZ=${TZ}
     labels:
       # - "com.centurylinklabs.watchtower.enable=true"
       # - "com.centurylinklabs.watchtower.scope=monitor"
