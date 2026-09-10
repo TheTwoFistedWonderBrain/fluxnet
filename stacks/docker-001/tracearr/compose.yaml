@@ -15,7 +15,7 @@ services:
       - "traefik.http.routers.tracearr.rule=Host(`tracearr.${DOMAIN_BASE_01}`)"
       - "traefik.http.routers.tracearr.tls=true"
       - "traefik.http.routers.tracearr.tls.certresolver=production"
-      - "traefik.http.routers.tracearr.middlewares=forwardAuth-authentik@file"
+      # - "traefik.http.routers.tracearr.middlewares=forwardAuth-authentik@file"
       - "traefik.http.routers.tracearr-internal-lunasea.entrypoints=https-internal-lunasea"
       - "traefik.http.routers.tracearr-internal-lunasea.rule=Host(`tracearr.${DOMAIN_BASE_01}`)"
       - "traefik.http.routers.tracearr-internal-lunasea.tls=true"
