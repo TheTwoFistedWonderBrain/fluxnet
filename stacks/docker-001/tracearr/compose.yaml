@@ -70,7 +70,7 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - ./backup:/data/backup
+      - tracearr_backups:/data/backup
     restart: unless-stopped
     networks:
       - tracearr_backend
@@ -130,6 +130,7 @@ networks:
 volumes:
   timescale_data:
   redis_data:
+  tracearr_backups:
 
 # services:
 #   tracearr:
