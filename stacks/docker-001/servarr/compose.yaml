@@ -422,7 +422,7 @@ services:
     networks:
       - servarr
   tautulli:
-    image: lscr.io/linuxserver/tautulli:latest
+    image: tautulli/tautulli:latest
     container_name: tautulli
     hostname: tautulli
     environment:
