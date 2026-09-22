@@ -1,15 +1,45 @@
+# 2026/09/22 - Tracearr broke overnight, likely because of a full disk, and will not start.
+# Permissions are good and have not changed. I recently spoke to the dev on Discord for an unrelated issue
+# and found the supervised tag is unsupported in a VM, and bind mounts are not recommended.
+# Rather than spend much more time troubleshooting, I am going to wipe the data directories
+# and redeploy with the recommended compose.
+#
+# Since Docker volumes are recommended here, I am using them for timescale and redis. For backups, bind mounts.
+# Hey, I like my bind mounts. They should be fine as long as I keep an eye on permissions.
+#
+# Tracearr - PostgreSQL 18 Deployment (Experimental)
+#
+# WARNING: NEW INSTALLATIONS ONLY
+# Do NOT use with existing data volumes. PostgreSQL 18 data format is
+# incompatible with PostgreSQL 15/16. Delete or rename old volumes first.
+#
+# Uses PostgreSQL 18 with TimescaleDB HA image (includes Toolkit extension).
+#
+# REQUIREMENTS:
+#   - ~1GB RAM for Tracearr container
+#   - Secrets must be generated manually (see below)
+#
+# DEPLOY:
+#   # 1. Generate secrets
+#   echo "JWT_SECRET=$(openssl rand -hex 32)" > .env
+#   echo "COOKIE_SECRET=$(openssl rand -hex 32)" >> .env
+#
+#   # 2. Start
+#   docker compose -f docker-compose.pg18.yml up -d
+#
+# OPTIONAL ENVIRONMENT VARIABLES:
+#   PORT=3000              # Host port to publish on (the container always listens on 3000)
+#   TZ=America/New_York    # Timezone
+#   DB_PASSWORD=tracearr   # Database password
+#   LOG_LEVEL=info         # Log level (debug, info, warn, error)
+
 services:
   tracearr:
-    image: ghcr.io/connorgallopo/tracearr:supervised-next
+    image: ghcr.io/connorgallopo/tracearr:latest
     container_name: tracearr
-    hostname: tracearr
-    shm_size: 256mb  # Required for PostgreSQL shared memory
     # ports:
-    #   - "${PORT:-3000}:3000"
+    #   - "${TRACEARR_PORT:-3000}:3000"
     labels:
-      # - "docker.stack=servarr"
-      # - "wud.watch=true"
-      # - "wud.trigger.include=discord.batch,docker.manual"
       - "traefik.enable=true"
       - "traefik.http.routers.tracearr.entrypoints=https-internal"
       - "traefik.http.routers.tracearr.rule=Host(`tracearr.${DOMAIN_BASE_01}`)"
@@ -21,31 +51,134 @@ services:
       # - "traefik.http.routers.tracearr-internal-lunasea.tls=true"
       # - "traefik.http.routers.tracearr-internal-lunasea.tls.certresolver=production"
       - "traefik.http.services.tracearr.loadbalancer.server.port=3000"
-      # - "traefik.docker.network=management"
+      - "traefik.docker.network=servarr"
     environment:
-      - TZ=America/Chicago
-      - LOG_LEVEL=debug
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - TZ=${TZ:-UTC}
+      - DATABASE_URL=postgres://tracearr:${TRACEARR_DB_PASSWORD:-tracearr}@timescale:5432/tracearr
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${TRACEARR_JWT_SECRET}
+      - COOKIE_SECRET=${TRACEARR_COOKIE_SECRET}
+      - CORS_ORIGIN=${TRACEARR_CORS_ORIGIN:-*}
       - TRUST_PROXY=true
-      # Optional: Override auto-generated secrets
-      # - JWT_SECRET=${JWT_SECRET}
-      # - COOKIE_SECRET=${COOKIE_SECRET}
+      - LOG_LEVEL=${TRACEARR_LOG_LEVEL:-info}
+      # - DATABASE_POOL_MAX=50  # Database connection pool size (default: 50)
+    depends_on:
+      timescale:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
-      # - tracearr_postgres:/data/postgres
-      # - tracearr_redis:/data/redis
-      # - tracearr_data:/data/tracearr
-      # Bind mount alternative (uncomment and adjust paths):
-      - ./data/postgres:/data/postgres
-      - ./data/redis:/data/redis
-      - ./data/tracearr:/data/tracearr
+      - ./backup:/data/backup
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:3000/health"]
-      interval: 30s
-      timeout: 10s
-      start_period: 60s
-      retries: 3
     networks:
+      - tracearr_backend
       - servarr
+
+  timescale:
+    # TimescaleDB HA with PostgreSQL 18 - pinned for stability
+    image: timescale/timescaledb-ha:pg18.4-ts2.29.1
+    container_name: tracearr-db
+    shm_size: 512mb  # Required for PostgreSQL shared memory (increase for large imports)
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536  # TimescaleDB chunks require many file descriptors
+    # Cap tuple decompression per DML transaction (migrations and imports grant
+    # themselves unlimited per-session, so this stays at the TimescaleDB default)
+    # Increase lock table size for large imports (Tautulli imports with many TimescaleDB chunks)
+    # max_connections 150 leaves headroom for multi-instance app pools; the app
+    # sizes its pool from whatever postgres reports, so this is capacity, not tuning
+    command: postgres -c timescaledb.license=timescale -c timescaledb.max_tuples_decompressed_per_dml_transaction=100000 -c max_locks_per_transaction=4096 -c timescaledb.telemetry_level=off -c max_connections=150
+    environment:
+      - POSTGRES_USER=tracearr
+      - POSTGRES_PASSWORD=${TRACEARR_DB_PASSWORD:-tracearr}
+      - POSTGRES_DB=tracearr
+    volumes:
+      - timescale_data:/home/postgres/pgdata/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tracearr"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - tracearr_backend
+
+  redis:
+    image: redis:8-alpine
+    container_name: tracearr-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - tracearr_backend
+
 networks:
+  tracearr_backend:
+    external: true
   servarr:
     external: true
+
+volumes:
+  timescale_data:
+  redis_data:
+
+# services:
+#   tracearr:
+#     image: ghcr.io/connorgallopo/tracearr:supervised-next
+#     container_name: tracearr
+#     hostname: tracearr
+#     shm_size: 256mb  # Required for PostgreSQL shared memory
+#     # ports:
+#     #   - "${PORT:-3000}:3000"
+#     labels:
+#       # - "docker.stack=servarr"
+#       # - "wud.watch=true"
+#       # - "wud.trigger.include=discord.batch,docker.manual"
+#       - "traefik.enable=true"
+#       - "traefik.http.routers.tracearr.entrypoints=https-internal"
+#       - "traefik.http.routers.tracearr.rule=Host(`tracearr.${DOMAIN_BASE_01}`)"
+#       - "traefik.http.routers.tracearr.tls=true"
+#       - "traefik.http.routers.tracearr.tls.certresolver=production"
+#       # - "traefik.http.routers.tracearr.middlewares=forwardAuth-authentik@file"
+#       # - "traefik.http.routers.tracearr-internal-lunasea.entrypoints=https-internal-lunasea"
+#       # - "traefik.http.routers.tracearr-internal-lunasea.rule=Host(`tracearr.${DOMAIN_BASE_01}`)"
+#       # - "traefik.http.routers.tracearr-internal-lunasea.tls=true"
+#       # - "traefik.http.routers.tracearr-internal-lunasea.tls.certresolver=production"
+#       - "traefik.http.services.tracearr.loadbalancer.server.port=3000"
+#       # - "traefik.docker.network=management"
+#     environment:
+#       - TZ=America/Chicago
+#       - LOG_LEVEL=debug
+#       - TRUST_PROXY=true
+#       # Optional: Override auto-generated secrets
+#       # - JWT_SECRET=${JWT_SECRET}
+#       # - COOKIE_SECRET=${COOKIE_SECRET}
+#     volumes:
+#       # - tracearr_postgres:/data/postgres
+#       # - tracearr_redis:/data/redis
+#       # - tracearr_data:/data/tracearr
+#       # Bind mount alternative (uncomment and adjust paths):
+#       - ./data/postgres:/data/postgres
+#       - ./data/redis:/data/redis
+#       - ./data/tracearr:/data/tracearr
+#     restart: unless-stopped
+#     healthcheck:
+#       test: ["CMD", "curl", "-f", "http://127.0.0.1:3000/health"]
+#       interval: 30s
+#       timeout: 10s
+#       start_period: 60s
+#       retries: 3
+#     networks:
+#       - servarr
+# networks:
+#   servarr:
+#     external: true
