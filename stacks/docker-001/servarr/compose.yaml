@@ -421,43 +421,43 @@ services:
       - /mnt/docker_extras/backup/stacks/servarr/sonarr:/backups
     networks:
       - servarr
-  tautulli:
-    image: tautulli/tautulli:latest
-    container_name: tautulli
-    hostname: tautulli
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=America/Chicago
-    labels:
-      - "docker.stack=servarr"
-      # - "com.centurylinklabs.watchtower.enable=true"
-      # - "com.centurylinklabs.watchtower.scope=update"
-      - "wud.watch=true"
-      - "wud.trigger.include=discord.batch,docker.manual"
-      - "traefik.enable=true"
-      - "traefik.http.routers.tautulli-internal.entrypoints=https-internal"
-      - "traefik.http.routers.tautulli-internal.rule=Host(`tautulli.${DOMAIN_BASE_01}`)"
-      - "traefik.http.routers.tautulli-internal.tls=true"
-      - "traefik.http.routers.tautulli-internal.tls.certresolver=production"
-      - "traefik.http.routers.tautulli-internal.middlewares=forwardAuth-authentik@file"
-      - "traefik.http.routers.tautulli-external.entrypoints=https-external"
-      - "traefik.http.routers.tautulli-external.rule=Host(`tautulli.${DOMAIN_BASE_01}`)"
-      - "traefik.http.routers.tautulli-external.tls=true"
-      - "traefik.http.routers.tautulli-external.tls.certresolver=production"
-      - "traefik.http.routers.tautulli-external.middlewares=forwardAuth-authentik@file"
-      - "traefik.http.routers.tautulli-internal-lunasea.entrypoints=https-internal-lunasea"
-      - "traefik.http.routers.tautulli-internal-lunasea.rule=Host(`tautulli.${DOMAIN_BASE_01}`)"
-      - "traefik.http.routers.tautulli-internal-lunasea.tls=true"
-      - "traefik.http.routers.tautulli-internal-lunasea.tls.certresolver=production"
-      - "traefik.http.services.tautulli-service.loadbalancer.server.port=8181"
-    restart: unless-stopped
-    volumes:
-      - ./tautulli/config:/config
-      - /mnt/docker/apps/plex/config/Library/Application Support/Plex Media Server/Logs:/plex_logs
-      - /mnt/docker_extras/backup/stacks/servarr/tautulli:/config/backups
-    networks:
-      - servarr
+  # tautulli:
+  #   image: tautulli/tautulli:latest
+  #   container_name: tautulli
+  #   hostname: tautulli
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #     - TZ=America/Chicago
+  #   labels:
+  #     - "docker.stack=servarr"
+  #     # - "com.centurylinklabs.watchtower.enable=true"
+  #     # - "com.centurylinklabs.watchtower.scope=update"
+  #     - "wud.watch=true"
+  #     - "wud.trigger.include=discord.batch,docker.manual"
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.tautulli-internal.entrypoints=https-internal"
+  #     - "traefik.http.routers.tautulli-internal.rule=Host(`tautulli.${DOMAIN_BASE_01}`)"
+  #     - "traefik.http.routers.tautulli-internal.tls=true"
+  #     - "traefik.http.routers.tautulli-internal.tls.certresolver=production"
+  #     - "traefik.http.routers.tautulli-internal.middlewares=forwardAuth-authentik@file"
+  #     - "traefik.http.routers.tautulli-external.entrypoints=https-external"
+  #     - "traefik.http.routers.tautulli-external.rule=Host(`tautulli.${DOMAIN_BASE_01}`)"
+  #     - "traefik.http.routers.tautulli-external.tls=true"
+  #     - "traefik.http.routers.tautulli-external.tls.certresolver=production"
+  #     - "traefik.http.routers.tautulli-external.middlewares=forwardAuth-authentik@file"
+  #     - "traefik.http.routers.tautulli-internal-lunasea.entrypoints=https-internal-lunasea"
+  #     - "traefik.http.routers.tautulli-internal-lunasea.rule=Host(`tautulli.${DOMAIN_BASE_01}`)"
+  #     - "traefik.http.routers.tautulli-internal-lunasea.tls=true"
+  #     - "traefik.http.routers.tautulli-internal-lunasea.tls.certresolver=production"
+  #     - "traefik.http.services.tautulli-service.loadbalancer.server.port=8181"
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./tautulli/config:/config
+  #     - /mnt/docker/apps/plex/config/Library/Application Support/Plex Media Server/Logs:/plex_logs
+  #     - /mnt/docker_extras/backup/stacks/servarr/tautulli:/config/backups
+  #   networks:
+  #     - servarr
   unpackerr:
     image: golift/unpackerr
     container_name: unpackerr
