@@ -24,7 +24,7 @@ services:
     networks:
       - authentik_backend
   server:
-    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.5.6}
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.8.3}
     container_name: authentik-server
     hostname: authentik-server
     command: server
@@ -76,7 +76,7 @@ services:
       - ldap
       - oidc
   worker:
-    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.5.6}
+    image: ${AUTHENTIK_IMAGE:-ghcr.io/goauthentik/server}:${AUTHENTIK_TAG:-2026.8.3}
     command: worker
     environment:
       - AUTHENTIK_POSTGRESQL__HOST=postgresql
