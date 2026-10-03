@@ -149,6 +149,8 @@ services:
       - "traefik.http.routers.lidarr.tls=true"
       - "traefik.http.routers.lidarr.tls.certresolver=production"
       - "traefik.http.services.lidarr.loadbalancer.server.port=8686"
+    ports:
+      - 8686:8686
     volumes:
       - ./lidarr/config:/config
       - /mnt/data/media/audio:/audio #optional
