@@ -56,20 +56,20 @@ services:
   #     - "traefik.http.services.whoami.loadbalancer.server.port=80"
   #   networks:
   #     - management
-  # tunnel:
-  #   container_name: traefik-cookiecollective-https
-  #   image: cloudflare/cloudflared
-  #   restart: unless-stopped
-  #   command: tunnel run
-  #   labels:
-  #   #   - "com.centurylinklabs.watchtower.enable=true"
-  #   #   - "com.centurylinklabs.watchtower.scope=monitor"  
-  #     - "wud.watch=true"
-  #     - "wud.trigger.include=discord.batch,docker.manual"  
-  #   environment:
-  #     - TUNNEL_TOKEN=${CLOUDFLARED_TUNNEL_TOKEN}
-  #   networks:
-  #     - ingress
+  tunnel:
+    container_name: traefik-cookiecollective-https
+    image: cloudflare/cloudflared
+    restart: unless-stopped
+    command: tunnel run
+    labels:
+    #   - "com.centurylinklabs.watchtower.enable=true"
+    #   - "com.centurylinklabs.watchtower.scope=monitor"  
+      - "wud.watch=true"
+      - "wud.trigger.include=discord.batch,docker.manual"  
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARED_TUNNEL_TOKEN}
+    networks:
+      - ingress
 networks:
   ingress:
     external: true
