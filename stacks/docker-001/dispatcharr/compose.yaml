@@ -25,7 +25,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.dispatcharr.entrypoints=https-internal"
-      - "traefik.http.routers.dispatcharr.rule=Host(`tracearr.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.dispatcharr.rule=Host(`dispatcharr.${DOMAIN_BASE_01}`)"
       - "traefik.http.routers.dispatcharr.tls=true"
       - "traefik.http.routers.dispatcharr.tls.certresolver=production"
       - "traefik.http.services.dispatcharr.loadbalancer.server.port=9191"
