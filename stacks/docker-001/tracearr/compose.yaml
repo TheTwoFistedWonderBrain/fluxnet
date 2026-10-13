@@ -41,7 +41,7 @@ services:
     #   - "${TRACEARR_PORT:-3000}:3000"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.tracearr.entrypoints=https-internal"
+      - "traefik.http.routers.tracearr.entrypoints=https-internal,https-external"
       - "traefik.http.routers.tracearr.rule=Host(`tracearr.${DOMAIN_BASE_01}`)"
       - "traefik.http.routers.tracearr.tls=true"
       - "traefik.http.routers.tracearr.tls.certresolver=production"
