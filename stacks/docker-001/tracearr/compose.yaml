@@ -60,7 +60,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - JWT_SECRET=${TRACEARR_JWT_SECRET}
       - COOKIE_SECRET=${TRACEARR_COOKIE_SECRET}
-      - CORS_ORIGIN=${TRACEARR_CORS_ORIGIN:-*}
+      - CORS_ORIGIN=${TRACEARR_CORS_ORIGIN}
       - TRUST_PROXY=2
       - LOG_LEVEL=${TRACEARR_LOG_LEVEL:-info}
       # - DATABASE_POOL_MAX=50  # Database connection pool size (default: 50)
