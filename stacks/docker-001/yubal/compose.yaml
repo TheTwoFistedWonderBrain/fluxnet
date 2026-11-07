@@ -1,0 +1,25 @@
+# compose.yaml
+services:
+  yubal:
+    image: ghcr.io/guillevc/yubal:latest
+    container_name: yubal
+    # ports:
+    #   - 8000:8000
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.yubal.entrypoints=https-internal"
+      - "traefik.http.routers.yubal.rule=Host(`yubal.${DOMAIN_BASE_01}`)"
+      - "traefik.http.routers.yubal.tls=true"
+      - "traefik.http.routers.yubal.tls.certresolver=production"
+      - "traefik.http.services.yubal.loadbalancer.server.port=8000"
+    environment:
+      PUID: 1000
+      PGID: 1000
+      YUBAL_SCHEDULER_CRON: "0 0 * * *"
+      YUBAL_DOWNLOAD_UGC: false
+      YUBAL_TZ: America/Chicago
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+      - /mnt/data/media/temp/yubal:/yubal_downloads
+    restart: unless-stopped
