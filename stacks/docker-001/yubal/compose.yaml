@@ -3,8 +3,8 @@ services:
   yubal:
     image: ghcr.io/guillevc/yubal:latest
     container_name: yubal
-    ports:
-      - 8000:8000
+    # ports:
+    #   - 8000:8000
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.yubal.entrypoints=https-internal"
@@ -21,5 +21,10 @@ services:
     volumes:
       - ./data:/app/data
       - ./config:/app/config
-      # - /mnt/data/media/temp/yubal:/yubal_downloads
+      - /mnt/data/media/temp/yubal:/yubal_downloads
     restart: unless-stopped
+    networks:
+      - servarr
+networks:
+  servarr:
+    external: true
