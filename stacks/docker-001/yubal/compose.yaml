@@ -19,9 +19,8 @@ services:
       YUBAL_DOWNLOAD_UGC: false
       YUBAL_TZ: America/Chicago
     volumes:
-      - ./data:/app/data
+      - /mnt/data/media/temp/yubal:/app/data
       - ./config:/app/config
-      - /mnt/data/media/temp/yubal:/yubal_downloads
     restart: unless-stopped
     networks:
       - servarr
