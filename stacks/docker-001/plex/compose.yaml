@@ -39,6 +39,7 @@ services:
       - /mnt/data/media/audio/music:/media/music
       - /mnt/data/media/placeholder/movies:/media/placeholder-movies
       - /mnt/data/media/placeholder/tv:/media/placeholder-tv
+      - /mnt/data/media/training:/other/training
       - /mnt/docker_extras/backup/apps/plex:/backup
     restart: unless-stopped
     networks:
